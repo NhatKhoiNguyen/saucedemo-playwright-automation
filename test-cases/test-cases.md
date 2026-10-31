@@ -18,4 +18,3 @@
 | CHK-002 | Checkout | Checkout without first name | Negative | First-name validation error is displayed |
 | CHK-003 | Checkout | Checkout without postal code | Negative | Postal-code validation error is displayed |
 
-Note: These are project test scenarios. Update execution status and attach actual run evidence after running the suite locally/CI.

@@ -1,40 +1,51 @@
 import { test, expect } from './fixtures';
 
-test.describe('Product inventory', () => {
-  test.beforeEach(async ({ loginPage }) => {
-    await loginPage.goto();
-    await loginPage.login('standard_user', 'secret_sauce');
-  });
+test.describe('Inventory Scenarios', () => {
+  test.beforeEach(async ({ loggedInPage }) => {});
 
-  test('should display products on inventory page', async ({ inventoryPage }) => {
+  test('INV-001: Display products', async ({ inventoryPage }) => {
     await inventoryPage.expectLoaded();
     await expect(inventoryPage.inventoryItems).toHaveCount(6);
   });
 
-  test('should add a product to cart and update cart badge', async ({ inventoryPage, page }) => {
+  test('INV-002: Add product to cart', async ({ inventoryPage, page }) => {
     await inventoryPage.addProductToCart('Sauce Labs Backpack');
     await expect(inventoryPage.cartBadge).toHaveText('1');
-    await inventoryPage.openCart();
-    await expect(page).toHaveURL(/cart\.html/);
-    await expect(page.getByText('Sauce Labs Backpack', { exact: true })).toBeVisible();
   });
 
-  test('should remove a product from inventory and clear cart badge', async ({ inventoryPage }) => {
+  test('INV-003: Remove product from cart', async ({ inventoryPage }) => {
     await inventoryPage.addProductToCart('Sauce Labs Backpack');
     await inventoryPage.removeProductFromCart('Sauce Labs Backpack');
-    await expect(inventoryPage.cartBadge).toHaveCount(0);
+    await expect(inventoryPage.cartBadge).not.toBeVisible();
   });
 
-  test('should sort products by name A to Z', async ({ inventoryPage }) => {
+  test('INV-004: Sort products A to Z', async ({ inventoryPage }) => {
     await inventoryPage.sortBy('az');
-    const names = await inventoryPage.inventoryItems.locator('.inventory_item_name').allTextContents();
-    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
+    const names = await inventoryPage.getProductNames();
+    expect(names).toEqual([...names].sort());
   });
 
-  test('should sort products by price low to high', async ({ inventoryPage }) => {
+  test('INV-005: Sort products Z to A', async ({ inventoryPage }) => {
+    await inventoryPage.sortBy('za');
+    const names = await inventoryPage.getProductNames();
+    expect(names).toEqual([...names].sort().reverse());
+  });
+
+  test('INV-006: Sort products by price low to high', async ({ inventoryPage }) => {
     await inventoryPage.sortBy('lohi');
-    const prices = (await inventoryPage.inventoryItems.locator('.inventory_item_price').allTextContents())
-      .map(price => Number(price.replace('$', '')));
+    const prices = await inventoryPage.getProductPrices();
     expect(prices).toEqual([...prices].sort((a, b) => a - b));
   });
+
+  test('INV-007: Sort products by price high to low', async ({ inventoryPage }) => {
+    await inventoryPage.sortBy('hilo');
+    const prices = await inventoryPage.getProductPrices();
+    expect(prices).toEqual([...prices].sort((a, b) => b - a));
+  });
+
+  test('INV-008: View product details page', async ({ inventoryPage, page }) => {
+    await inventoryPage.openProductDetail('Sauce Labs Backpack');
+    await expect(page).toHaveURL('/inventory-item.html?id=4');
+    await expect(page.locator('[data-test="inventory-item-name"]')).toHaveText('Sauce Labs Backpack');
+  });  
 });

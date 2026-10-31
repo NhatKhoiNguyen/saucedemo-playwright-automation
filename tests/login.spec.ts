@@ -3,40 +3,48 @@ import { test, expect } from './fixtures';
 const validUser = 'standard_user';
 const password = 'secret_sauce';
 
-test.describe('Login', () => {
-  test('should login with valid credentials', async ({ page, loginPage, inventoryPage }) => {
+test.describe('Login Scenarios', () => {
+  test.beforeEach(async ({ loginPage }) => {
     await loginPage.goto();
-    await loginPage.login(validUser, password);
+  });
 
-    await expect(page).toHaveURL(/inventory\.html/);
+  test('LOGIN-001: Login with valid standard user', async ({ page, loginPage, inventoryPage }) => {
+    await loginPage.login(validUser, password);
+    await expect(page).toHaveURL('/inventory.html');
     await inventoryPage.expectLoaded();
   });
 
-  test('should show an error for an invalid password', async ({ loginPage }) => {
-    await loginPage.goto();
+  test('LOGIN-002: Login with invalid password', async ({ loginPage }) => {
     await loginPage.login(validUser, 'wrong_password');
-
     await loginPage.expectLoginError('Username and password do not match');
   });
 
-  test('should show an error when username is empty', async ({ loginPage }) => {
-    await loginPage.goto();
+  test('LOGIN-003: Submit with empty username', async ({ loginPage }) => {
     await loginPage.login('', password);
-
     await loginPage.expectLoginError('Username is required');
   });
 
-  test('should show an error when password is empty', async ({ loginPage }) => {
-    await loginPage.goto();
+  test('LOGIN-004: Submit with empty password', async ({ loginPage }) => {
     await loginPage.login(validUser, '');
-
     await loginPage.expectLoginError('Password is required');
   });
 
-  test('should prevent a locked-out user from logging in', async ({ loginPage }) => {
-    await loginPage.goto();
+  test('LOGIN-005: Login with locked-out user', async ({ loginPage }) => {
     await loginPage.login('locked_out_user', password);
-
-    await loginPage.expectLoginError('locked out');
+    await loginPage.expectLoginError('Sorry, this user has been locked out.');
   });
+
+  test('LOGIN-006: Login with problem user', async ({ loginPage, page }) => {
+    await loginPage.login('problem_user', password);
+    await expect(page).toHaveURL('/inventory.html');
+  });
+
+  test('LOGIN-007: Login with performance glitch user', async ({ loginPage, page }) => {
+    const startTime = Date.now();
+    await loginPage.login('performance_glitch_user', password);
+    await expect(page).toHaveURL('/inventory.html');
+    const duration = Date.now() - startTime;
+    expect(duration).toBeGreaterThan(1000);
+  });
+  
 });
