@@ -33,7 +33,10 @@ A portfolio project demonstrating end-to-end UI automation for [SauceDemo](https
 │   ├── fixtures.ts
 │   ├── login.spec.ts
 │   ├── inventory.spec.ts
-│   └── cart-checkout.spec.ts
+│   ├── cart.spec.ts
+│   ├── checkout.spec.ts
+│   ├── navigation.spec.ts
+│   └── security.spec.ts
 ├── test-cases/
 │   └── test-cases.md
 ├── playwright.config.ts
@@ -119,18 +122,6 @@ The `locked_out_user` account is used for a negative login scenario. Demo-site b
 - Add accessibility checks.
 - Add test data builders and environment-based base URLs.
 - Add a smoke/regression tag strategy and a richer test matrix.
-- Publish report history if the portfolio needs a browsable dashboard.
-
-## CV-ready project description
-
-**SauceDemo E-commerce UI Automation | Playwright, TypeScript**
-- Designed and implemented end-to-end UI automation for login, product inventory, cart and checkout flows using Playwright Test and TypeScript.
-- Applied Page Object Model (POM), reusable fixtures and web-first assertions to improve test maintainability.
-- Covered positive and negative scenarios, including login validation, cart operations, product sorting and checkout form validation.
-- Configured cross-browser execution for Chromium, Firefox and WebKit, with HTML reporting and failure artifacts.
-- Integrated automated test execution and artifact upload into GitHub Actions CI.
-
-Only list cross-browser/CI execution as verified experience after you have successfully run the workflow and reviewed its results.
 
 ## References
 
