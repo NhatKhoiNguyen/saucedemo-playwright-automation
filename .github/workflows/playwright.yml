@@ -79,7 +79,7 @@ jobs:
           retention-days: 3
 
   merge-reports:
-    if: always() && needs.regression-test.result == 'skipped' && (github.event_name == 'push' || github.event_name == 'pull_request' || github.event.inputs.test_suite == 'regression')
+    if: always() && (github.event_name == 'push' || github.event_name == 'pull_request' || github.event.inputs.test_suite == 'regression')
     needs: [regression-test]
     runs-on: ubuntu-latest
     timeout-minutes: 10
