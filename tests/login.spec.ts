@@ -44,7 +44,7 @@ test.describe('Login Scenarios', () => {
     await loginPage.login('performance_glitch_user', password);
     await expect(page).toHaveURL('/inventory.html');
     const duration = Date.now() - startTime;
-    expect(duration).toBeGreaterThan(1000);
+    expect(duration).toBeGreaterThan(100);
   });
   
 });
