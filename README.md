@@ -94,8 +94,6 @@ After a test run, the HTML report is generated in `playwright-report/`. Screensh
 | Cross-browser | Chromium, Firefox, WebKit |
 | CI | GitHub Actions on push and pull request |
 
-The included suite has 15 test cases. The test count and pass rate should be confirmed by running the suite in your environment; do not present unverified results as completed execution.
-
 ## CI workflow
 
 GitHub Actions runs dependency installation, browser installation, TypeScript type-checking and Playwright tests for pushes and pull requests to `main`/`master`. The report and test artifacts are uploaded even if tests fail.
