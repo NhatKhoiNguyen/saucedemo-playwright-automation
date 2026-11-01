@@ -5,7 +5,7 @@ test.describe('Checkout Scenarios', () => {
     await inventoryPage.addProductToCart('Sauce Labs Backpack'); // $29.99
   });
 
-  test('CHK-001: Complete purchase successfully', async ({ cartPage, checkoutPage, page }) => {
+  test('CHK-001: Complete purchase successfully @smoke', async ({ cartPage, checkoutPage, page }) => {
     await cartPage.goto();
     await cartPage.checkout();
     await expect(page).toHaveURL('/checkout-step-one.html');

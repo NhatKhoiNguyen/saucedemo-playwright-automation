@@ -8,28 +8,28 @@ test.describe('Login Scenarios', () => {
     await loginPage.goto();
   });
 
-  test('LOGIN-001: Login with valid standard user', async ({ page, loginPage, inventoryPage }) => {
+  test('LOGIN-001: Login with valid standard user @smoke', async ({ page, loginPage, inventoryPage }) => {
     await loginPage.login(validUser, password);
     await expect(page).toHaveURL('/inventory.html');
     await inventoryPage.expectLoaded();
   });
 
-  test('LOGIN-002: Login with invalid password', async ({ loginPage }) => {
+  test('LOGIN-002: Login with invalid password @smoke', async ({ loginPage }) => {
     await loginPage.login(validUser, 'wrong_password');
     await loginPage.expectLoginError('Username and password do not match');
   });
 
-  test('LOGIN-003: Submit with empty username', async ({ loginPage }) => {
+  test('LOGIN-003: Submit with empty username @smoke', async ({ loginPage }) => {
     await loginPage.login('', password);
     await loginPage.expectLoginError('Username is required');
   });
 
-  test('LOGIN-004: Submit with empty password', async ({ loginPage }) => {
+  test('LOGIN-004: Submit with empty password @smoke', async ({ loginPage }) => {
     await loginPage.login(validUser, '');
     await loginPage.expectLoginError('Password is required');
   });
 
-  test('LOGIN-005: Login with locked-out user', async ({ loginPage }) => {
+  test('LOGIN-005: Login with locked-out user @smoke', async ({ loginPage }) => {
     await loginPage.login('locked_out_user', password);
     await loginPage.expectLoginError('Sorry, this user has been locked out.');
   });

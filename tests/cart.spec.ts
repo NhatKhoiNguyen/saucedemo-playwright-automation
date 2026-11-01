@@ -5,7 +5,7 @@ test.describe('Cart Scenarios', () => {
     await inventoryPage.addProductToCart('Sauce Labs Backpack');
   });
 
-  test('CART-001: Verify selected item in cart', async ({ cartPage }) => {
+  test('CART-001: Verify selected item in cart @smoke', async ({ cartPage }) => {
     await cartPage.goto();
     await cartPage.expectProduct('Sauce Labs Backpack');
   });
@@ -16,7 +16,7 @@ test.describe('Cart Scenarios', () => {
     await expect(page).toHaveURL('/inventory.html');
   });
 
-  test('CART-003: Remove item directly from cart', async ({ cartPage }) => {
+  test('CART-003: Remove item directly from cart @smoke', async ({ cartPage }) => {
     await cartPage.goto();
     await cartPage.removeProduct('Sauce Labs Backpack');
     await expect(cartPage.cartItems).toHaveCount(0);
@@ -27,6 +27,14 @@ test.describe('Cart Scenarios', () => {
     await expect(inventoryPage.cartBadge).toHaveText('1');
     await cartPage.goto();
     await expect(cartPage.cartItems).toHaveCount(1);
+  });
+
+  test('CART-005: Empty cart checkout attempt', async ({ inventoryPage, cartPage, checkoutPage, page }) => {
+    await inventoryPage.removeProductFromCart('Sauce Labs Backpack');
+    await cartPage.goto();
+    await expect(cartPage.cartItems).toHaveCount(0);
+    await cartPage.checkout();
+    await expect(page.getByText('Your cart is empty')).toBeVisible();
   });
 
 });

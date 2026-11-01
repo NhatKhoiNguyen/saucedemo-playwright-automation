@@ -1,4 +1,4 @@
-name: Playwright UI Tests
+name: Playwright CI/CD Pipeline
 
 on:
   push:
@@ -6,11 +6,21 @@ on:
   pull_request:
     branches: [main, master]
   workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Chọn nhóm Test muốn chạy thủ công:'
+        required: true
+        default: 'regression'
+        type: choice
+        options:
+          - smoke
+          - regression
 
 jobs:
-  test:
-    timeout-minutes: 30
+  smoke-test:
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.test_suite == 'smoke' || github.event.inputs.test_suite == 'regression'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,24 +31,80 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install dependencies & browsers
+        run: |
+          npm ci
+          npx playwright install --with-deps
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+      - name: Run Smoke Tests (@smoke)
+        run: npx playwright test --grep "@smoke"
 
-      - name: Type check
-        run: npm run typecheck
+  regression-test:
+    needs: [smoke-test]
+    if: needs.smoke-test.result == 'success' && (github.event_name != 'workflow_dispatch' || github.event.inputs.test_suite == 'regression') && (github.event_name == 'push' || github.event_name == 'pull_request' || github.event.inputs.test_suite == 'regression')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2, 3]
+        shardTotal: [3]
 
-      - name: Run UI tests
-        run: npm test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Upload Playwright report and test artifacts
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies & browsers
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npx playwright install --with-deps firefox
+          npx playwright install --with-deps webkit
+
+      - name: Run Sharded Regression Tests
+        run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+
+      - name: Upload Blob Report Part
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-test-results
-          path: |
-            playwright-report/
-            test-results/
+          name: blob-report-${{ matrix.shardIndex }}
+          path: blob-report/
+          retention-days: 3
+
+  merge-reports:
+    if: always() && needs.regression-test.result == 'skipped' && (github.event_name == 'push' || github.event_name == 'pull_request' || github.event.inputs.test_suite == 'regression')
+    needs: [regression-test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      
+      - run: npm ci
+
+      - name: Download all blob reports
+        uses: actions/download-artifact@v4
+        with:
+          path: all-blob-reports
+          pattern: blob-report-*
+          merge-multiple: true
+
+      - name: Merge Reports into HTML
+        run: npx playwright merge-reports --reporter=html all-blob-reports
+
+      - name: Upload Final HTML Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-final-html-report
+          path: playwright-report/
           retention-days: 14
